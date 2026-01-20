@@ -1,0 +1,16 @@
+style:
+  WildcardImport:
+    active: false
+
+complexity:
+  TooManyFunctions:
+    active: true
+
+exceptions:
+  TooGenericExceptionCaught:
+    active: true
+
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: true
+    ignoreAnnotated: []

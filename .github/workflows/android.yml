@@ -44,5 +44,8 @@ jobs:
           name: lint-report
           path: app/build/reports/lint-results-debug.html
 
+      - name: Run Detekt
+        run: ./gradlew detekt
+
       - name: Build Debug APK
         run: ./gradlew assembleDebug

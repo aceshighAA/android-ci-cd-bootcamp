@@ -35,8 +35,9 @@ fun Greeting(
     name: String,
     modifier: Modifier = Modifier
 ) {
-    var unUsedVar : String
-
+    val name: String? =
+        null
+    println(name!!)
     Text(
         text = "Hello $name!",
         modifier = modifier

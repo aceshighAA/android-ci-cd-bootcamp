@@ -2,6 +2,32 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias {libs.plugins.detekt }
+}
+
+detekt {
+    config =
+        files("$rootDir/detekt.yml")
+    buildUponDefaultConfig =
+        true
+    allRules =
+        false
+    baseline =
+        file("$projectDir/config/detekt/baseline.xml")
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    val compileKotlinDebug = tasks.findByName("compileDebugKotlin") as? org.jetbrains.kotlin.gradle.tasks
+    .KotlinCompile
+    if (compileKotlinDebug != null) {
+        dependsOn(compileKotlinDebug)
+        classpath.setFrom(compileKotlinDebug.outputs.files)
+        classpath.from(compileKotlinDebug.libraries)
+    }
+}
+
+dependencies {
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.8")
 }
 
 android {
