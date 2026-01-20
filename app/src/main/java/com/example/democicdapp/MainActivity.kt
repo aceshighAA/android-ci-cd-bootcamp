@@ -15,6 +15,8 @@ import com.example.democicdapp.ui.theme.DemoCiCdAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val unUsedVariable : String = ""
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
