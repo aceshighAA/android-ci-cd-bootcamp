@@ -35,9 +35,6 @@ fun Greeting(
     name: String,
     modifier: Modifier = Modifier
 ) {
-    val name: String? = null
-    println(name!!)
-
     Text(
         text = "Hello $name!",
         modifier = modifier

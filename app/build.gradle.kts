@@ -1,3 +1,4 @@
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -10,14 +11,16 @@ detekt {
     buildUponDefaultConfig = true
     allRules = false
     baseline = file("$projectDir/config/detekt/baseline.xml")
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
     reports {
         xml.required.set(true)
         html.required.set(true)
         txt.required.set(true)
+        sarif.required.set(true)
     }
-}
 
-tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
     val compileKotlinDebug = tasks.findByName("compileDebugKotlin") as? org.jetbrains.kotlin.gradle.tasks
     .KotlinCompile
     if (compileKotlinDebug != null) {
