@@ -6,14 +6,15 @@ plugins {
 }
 
 detekt {
-    config =
-        files("$rootDir/detekt.yml")
-    buildUponDefaultConfig =
-        true
-    allRules =
-        false
-    baseline =
-        file("$projectDir/config/detekt/baseline.xml")
+    config = files("$rootDir/detekt.yml")
+    buildUponDefaultConfig = true
+    allRules = false
+    baseline = file("$projectDir/config/detekt/baseline.xml")
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        txt.required.set(true)
+    }
 }
 
 tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {

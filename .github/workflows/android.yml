@@ -1,5 +1,9 @@
 name: Android CI
 
+permissions:
+  contents: read
+  pull-requests: write
+
 on:
   push:
     branches: [ "main" ]
@@ -48,6 +52,20 @@ jobs:
 
       - name: Run Detekt
         run: ./gradlew detekt
+
+      - name: Detekt PR Comment
+        if: failure() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: detekt-report
+          path: app/build/reports/detekt/detekt.txt
+
+      - name: Lint PR Comment
+        if: failure() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: lint-report
+          path: app/build/reports/lint-results-debug.txt
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
