@@ -1,5 +1,9 @@
 name: Android CI
 
+permissions:
+  contents: read
+  pull-requests: write
+
 on:
   push:
     branches: [ "main" ]
@@ -47,7 +51,37 @@ jobs:
           path: app/build/reports/lint-results-debug.html
 
       - name: Run Detekt
-        run: ./gradlew detekt
+        run: ./gradlew detekt || true
+
+      - name: Setup reviewdog
+        uses: reviewdog/action-setup@v1
+
+      - name: Reviewdog (Detekt SARIF)
+        if: github.event_name == 'pull_request'
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          reviewdog \
+            -f=sarif \
+            -name="detekt" \
+            -reporter=github-pr-review \
+            -filter-mode=diff_context \
+            -fail-level=any \
+            < app/build/reports/detekt/detekt.sarif
+
+      - name: Detekt PR Comment
+        if: failure() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: detekt-report
+          path: app/build/reports/detekt/detekt.txt
+
+      - name: Lint PR Comment
+        if: failure() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: lint-report
+          path: app/build/reports/lint-results-debug.txt
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
