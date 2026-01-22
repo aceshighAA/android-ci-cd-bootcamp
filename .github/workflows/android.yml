@@ -83,5 +83,9 @@ jobs:
           header: lint-report
           path: app/build/reports/lint-results-debug.txt
 
+      - name: Generate Detekt Summary
+        if: github.event_name == 'pull_request'
+        run: scripts/detekt-summary.sh >> $GITHUB_STEP_SUMMARY
+
       - name: Build Debug APK
         run: ./gradlew assembleDebug
