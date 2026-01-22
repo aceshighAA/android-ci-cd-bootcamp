@@ -30,11 +30,21 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
+      - name: Extract version from tag
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Build Release AAB
         run: ./gradlew bundleRelease
+
+      - name: Rename release artifact
+        run: |
+          mv app/build/outputs/bundle/release/app-release.aab \
+             app/build/outputs/bundle/release/app-v${VERSION}-release.aab
 
       - name: Upload Release Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-aab
-          path: app/build/outputs/bundle/release/*.aab
+          name: app-v${{ env.VERSION }}-release
+          path: app/build/outputs/bundle/release/app-v${{ env.VERSION }}-release.aab
