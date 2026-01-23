@@ -1,50 +1,91 @@
-name: Android Release (Artifact)
+name: Android Release
 
 on:
   push:
     tags:
-      - "v*"
+      - "v*.*.*"
+
+permissions:
+  contents: read
 
 jobs:
   release:
+    name: Release Build
     runs-on: ubuntu-latest
 
+    env:
+      VERSION: ${{ github.ref_name }}
+
     steps:
+      # 1️⃣ Checkout (TAG + history şart)
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up JDK 17
+      # 2️⃣ JDK
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          distribution: "temurin"
-          java-version: "17"
+          distribution: temurin
+          java-version: 17
 
+      # 3️⃣ Gradle Cache
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/*.gradle.kts', '**/gradle-wrapper.properties') }}
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/*.gradle.kts') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-      - name: Grant execute permission for gradlew
+      # 4️⃣ Gradlew permission
+      - name: Grant execute permission
         run: chmod +x ./gradlew
 
-      - name: Extract version from tag
+      # 5️⃣ Önceki TAG
+      - name: Get previous tag
+        id: prev_tag
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          PREV_TAG=$(git tag --sort=-creatordate | sed -n '2p')
+          echo "PREV_TAG=$PREV_TAG" >> $GITHUB_ENV
 
+      # 6️⃣ Release Notes üret
+      - name: Generate Release Notes
+        run: |
+          echo "## 🚀 Release ${VERSION}" > release-notes.md
+          echo "" >> release-notes.md
+
+          if [ -z "$PREV_TAG" ]; then
+            echo "🎉 Initial release" >> release-notes.md
+          else
+            echo "### Changes since $PREV_TAG" >> release-notes.md
+            git log ${PREV_TAG}..HEAD \
+              --pretty=format:"- %s (%an)" \
+              >> release-notes.md
+          fi
+
+      # 7️⃣ Release Notes → Job Summary
+      - name: Publish Release Notes to Summary
+        run: |
+          cat release-notes.md >> $GITHUB_STEP_SUMMARY
+
+      # 8️⃣ Release AAB üret
       - name: Build Release AAB
         run: ./gradlew bundleRelease
 
-      - name: Rename release artifact
-        run: |
-          mv app/build/outputs/bundle/release/app-release.aab \
-             app/build/outputs/bundle/release/app-v${VERSION}-release.aab
-
-      - name: Upload Release Artifact
+      # 9️⃣ AAB Artifact
+      - name: Upload Release AAB
         uses: actions/upload-artifact@v4
         with:
-          name: app-v${{ env.VERSION }}-release
-          path: app/build/outputs/bundle/release/app-v${{ env.VERSION }}-release.aab
+          name: release-aab-${{ env.VERSION }}
+          path: app/build/outputs/bundle/release/*.aab
+
+      # 🔟 Release Notes Artifact
+      - name: Upload Release Notes
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-notes-${{ env.VERSION }}
+          path: release-notes.md
