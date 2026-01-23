@@ -43,25 +43,33 @@ android {
     }
 
     defaultConfig {
-        applicationId =
-            "com.example.democicdapp"
-        minSdk =
-            24
-        targetSdk =
-            36
-        versionCode =
-            1
-        versionName =
-            "1.0"
+        applicationId = "com.example.democicdapp"
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 1
+        versionName = "1.0"
 
         testInstrumentationRunner =
             "androidx.test.runner.AndroidJUnitRunner"
     }
+    
+    signingConfigs {
+        create("release") {
+            storeFile =
+                file("${rootDir}/release.keystore")
+            storePassword =
+                System.getenv("KEYSTORE_PASSWORD")
+            keyAlias =
+                System.getenv("KEY_ALIAS")
+            keyPassword =
+                System.getenv("KEY_PASSWORD")
+        }
+    }
 
     buildTypes {
         release {
-            isMinifyEnabled =
-                false
+            isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
